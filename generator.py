@@ -1,4 +1,7 @@
 #!usr/bin/Python3
+'''
+Generator of random valid boards for a game of battleships
+'''
 import random
 
 
@@ -114,6 +117,24 @@ SHIPS = [
         [#square
             [1, 1],
             [1, 1]
+        ],
+        [#squiggly-left
+            [1, 0],
+            [1, 1],
+            [0, 1]
+        ],
+        [#squiggly right
+            [0, 1],
+            [1, 1],
+            [1, 0]
+        ],
+        [#squiggly-up
+            [0, 1, 1],
+            [1, 1, 0]
+        ],
+        [#squiggly-down
+            [1, 1, 0],
+            [0, 1, 1]
         ]
 
     ]
@@ -135,39 +156,76 @@ class Board():
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         ]
-    
+        self.taken_spaces = []
+
     def check_place(self, origin:list, ship:list):
-        x = origin[0]
-        y = origin[1]
-        if x>0:
-            x-=1
-        if y>0:
-            y-=1
-        for i in range(len(ship)+origin[1]-y+1):
-            if y+i>9:
-                break
-            for j in range(len(ship[0])+origin[0]-x+1):
-                if x+j>9:
-                    break
-                if self.content[y+i][x+j] == 1:
-                    return False
+        x, y = origin
+        for i, row in enumerate(ship):
+            for j, cell in enumerate(row):
+                if not cell:
+                    continue
+                for move_y in [-1, 0, 1]:
+                    if y+i+move_y>9 or y+i+move_y<0:
+                        continue
+                    for move_x in [-1, 0, 1]:
+                        if x+j+move_x>9 or x+j+move_x<0:
+                            continue
+                        if self.content[y+i+move_y][x+j+move_x]==1:
+                            return False
+
         return True
 
-    def fill(self, rules: list):
-        for type in range(len(rules)):
-            q = rules[type] #q for quantity
-            for i in range(q):
-                ship = random.choice(SHIPS[type])
+    def reset(self):
+        '''
+        Restets every board cell to 0.
+        '''
+        self.content = [
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        ]
+
+    def fill(self, rules: tuple = (4, 3, 2, 1)):
+        '''
+        Generates a random valid board with given ship quantities. In case of failure
+        the board will be reset and the process aborted.
+
+        Parameters:
+        rules (tuple): the quantities of the 4 types of ships to be placed.
+        Must be a 4-element long tuple.
+        '''
+        assert isinstance(rules, tuple) and len(rules) == 4
+        for t, q in enumerate(rules):#t for type, q for quantity
+            ships = [random.choice(SHIPS[t]) for x in range(q)]
+            for ship in ships:
                 pointer = [random.randint(0, 10-len(ship[0])), random.randint(0, 10-len(ship))]
-                while not self.check_place(pointer, ship):
+                spaces = []
+                tries = 1
+                while not self.check_place(pointer, ship) and tries<1000:
                     pointer = [random.randint(0, 10-len(ship[0])), random.randint(0, 10-len(ship))]
+                    tries+=1
+                if tries == 500:
+                    print(f"unable to find a spot for ship: {ship}; board setup failed")
+                    self.reset()
+                    return -1
                 for row in ship:
                     for element in row:
                         self.content[pointer[1]][pointer[0]] = element
+                        if element == 1:
+                            spaces.append((pointer[0], pointer[1]))
                         pointer[0]+=1
                     pointer[1]+=1
                     pointer[0]-=len(row)
-    
+                self.taken_spaces.append(spaces)
+        return 0
+
     def __str__(self):
         rtrn = "~~\n"
         for row in self.content:
@@ -180,7 +238,21 @@ class Board():
         rtrn+="~~\n"
         return rtrn
 
+    def is_any_afloat(self):
+        for row in self.content:
+            for cell in row:
+                if cell == 1:
+                    return True
+        return False
+    
+    def set_cell(self, cell:tuple, value: int):
+        self.content[cell[1]][cell[0]] = value
 
-board = Board()
-board.fill([4, 3, 2, 1])
-print(str(board))
+    def get_cell(self, pos:tuple):
+        return self.content[pos[1]][pos[0]]
+
+if __name__ == "__main__":
+    board = Board()
+    board.fill()
+    print(str(board))
+    print(board.taken_spaces)
