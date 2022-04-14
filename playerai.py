@@ -64,6 +64,7 @@ class PlayerAI:
         for neigh in neighbours:
             if self.enemy[neigh[1]][neigh[0]]== 1 and neigh!=previous:
                 self.mark_sunken(neigh, pos)
+        #fixme: marks the wrong tiles with 2s, need to check it dry
         for i in [-1, 0, 1]:
             if y+i>9 or y+i<0:
                 continue
@@ -129,6 +130,7 @@ class PlayerAI:
         print("GIVE ANY INPUT WHEN READY")
         input()
         round = 0
+        #fixme: problems with detecting when the game has ended
         while self.my_board.is_any_afloat and self.ships_sunk < 10:
             if round%2 == starting:#when it's bots turn
                 if len(self.queue) == 0:
