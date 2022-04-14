@@ -1,8 +1,5 @@
 #!usr/bin/Python3
-from ast import parse
-from glob import iglob
 import random
-from tracemalloc import start
 import generator
 import re
 
