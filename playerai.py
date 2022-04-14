@@ -1,9 +1,13 @@
-#!/usr/bin/python3
-# pylint: disable=missing-function-docstring,missing-class-docstring,invalid-name
-
-
-import random
+#!usr/bin/Python3
+#pylint: disable=C0116:missing-function-docstring,C0115:missing-class-docstring,C0103:invalid-name,C0114:missing-module-docstring
 import re
+import random
+
+import generator
+
+HIT = 1
+SUNK = 2
+MISS = -1
 
 import generator
 
@@ -11,14 +15,13 @@ import generator
 SHOT = re.compile(r"([A-Z])\s*([0-9]+)\s*")
 COLUMNS = "ABCDEFGHIJ"
 OUTCOMES = {
-    "m": -1,
-    "h": 1,
-    "s": 2,
-    -1: "miss",
-    1: "hit",
-    2: "sunk"
-}
-
+    "m": MISS,
+    "h": HIT,
+    "s": SUNK,
+    MISS: "miss",
+    HIT: "hit",
+    SUNK: "sunk"
+    }
 
 def parse_shot(shot: str):
     s = SHOT.match(shot)
@@ -66,27 +69,27 @@ class PlayerAI:
         if y < 9:
             neighbours.append((x, y+1))
         for neigh in neighbours:
-            if self.enemy[neigh[1]][neigh[0]] == 1 and neigh != previous:
+            if self.enemy[neigh[1]][neigh[0]] == HIT and neigh!=previous:
                 self.mark_sunken(neigh, pos)
-        # fixme: marks the wrong tiles with 2s, need to check it dry
+        #FIXME: marks the wrong tiles with 2s, need to check it dry
         for i in [-1, 0, 1]:
             if y+i > 9 or y+i < 0:
                 continue
             for j in [-1, 0, 1]:
                 if x+j < 0 or x+j > 9:
                     continue
-                self.enemy[y+i][x+j] = 2
+                self.enemy[y+i][x+j] = SUNK
         for option in self.options:
-            if self.enemy[option[1]][option[0]] == 2:
+            if self.enemy[option[1]][option[0]] == SUNK:
                 self.options.remove(option)
 
     def handle_result(self, pos: tuple, result: int):
         x, y = pos
-        if result == -1:
+        if result == MISS:
             return
-        elif result == 1:
-            self.enemy[y][x] = 1
-            if x > 0:
+        if result == HIT:
+            self.enemy[y][x] = HIT
+            if x>0:
                 to_append = (x-1, y)
                 if to_append in self.options:
                     self.queue.append(to_append)
@@ -106,22 +109,22 @@ class PlayerAI:
                 if to_append in self.options:
                     self.queue.append(to_append)
                     self.options.remove(to_append)
-        elif result == 2:
+        elif result == SUNK:
             self.queue = []
             self.ships_sunk += 1
             self.mark_sunken(pos)
 
     def recieve_shot(self, pos: tuple):
         if self.my_board.get_cell(pos) == 0:
-            return -1
-        self.my_board.set_cell(pos, 2)
+            return MISS
+        self.my_board.set_cell(pos, HIT)
         for ship in self.my_board.taken_spaces:
             for space in ship:
                 if space[0] == pos[0] and space[1] == pos[1]:
                     ship.remove(space)
                     if len(ship) == 0:
-                        return 2
-                    return 1
+                        return SUNK
+                    return HIT
 
     def play(self):
         self.my_board.fill()
@@ -146,6 +149,7 @@ class PlayerAI:
                 self.handle_result(shot, res)
                 if res == -1:
                     round_no += 1
+                    
             else:  # when it's players turn
                 shot = input().upper()
                 while not SHOT.match(shot):
