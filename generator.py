@@ -1,4 +1,5 @@
 #!usr/bin/Python3
+#pylint: disable=C0116:missing-function-docstring,C0115:missing-class-docstring,C0103:invalid-name,C0114:missing-module-docstring
 '''
 Generator of random valid boards for a game of battleships
 '''
@@ -123,7 +124,7 @@ SHIPS = [
             [1, 1],
             [0, 1]
         ],
-        [#squiggly right
+        [#squiggly-right
             [0, 1],
             [1, 1],
             [1, 0]
@@ -191,6 +192,7 @@ class Board():
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         ]
+        self.taken_spaces = []
 
     def fill(self, rules: tuple = (4, 3, 2, 1)):
         '''
@@ -214,7 +216,7 @@ class Board():
                 if tries == 500:
                     print(f"unable to find a spot for ship: {ship}; board setup failed")
                     self.reset()
-                    return -1
+                    return 1
                 for row in ship:
                     for element in row:
                         self.content[pointer[1]][pointer[0]] = element
@@ -238,13 +240,6 @@ class Board():
         rtrn+="~~\n"
         return rtrn
 
-    def is_any_afloat(self):
-        for row in self.content:
-            for cell in row:
-                if cell == 1:
-                    return True
-        return False
-    
     def set_cell(self, cell:tuple, value: int):
         self.content[cell[1]][cell[0]] = value
 
