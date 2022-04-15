@@ -5,13 +5,14 @@ import random
 
 import generator
 
+ERR1 = (1001, "Given coordinates appear to be out of range!")
 HIT = 2
 SUNK = -1
 MISS = 0
 
 
 SHOT = re.compile(r"([A-Z])\s*([0-9]+)\s*")
-COLUMNS = "ABCDEFGHIJ"
+COLUMNS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 OUTCOMES = {
     "m": MISS,
     "h": HIT,
@@ -103,17 +104,20 @@ class PlayerAI:
             self.mark_sunk(pos)
 
     def recieve_shot(self, pos: tuple):
-        if self.my_board.get_cell(pos) == 0:
-            return MISS
-        self.my_board.set_cell(pos, HIT)
-        for ship in self.my_board.taken_spaces:
-            for space in ship:
-                if space[0] == pos[0] and space[1] == pos[1]:
-                    ship.remove(space)
-                    if len(ship) == 0:
-                        self.my_board.taken_spaces.remove(ship)
-                        return SUNK
-                    return HIT
+        try:
+            if self.my_board.get_cell(pos) == 0:
+                return MISS
+            self.my_board.set_cell(pos, HIT)
+            for ship in self.my_board.taken_spaces:
+                for space in ship:
+                    if space[0] == pos[0] and space[1] == pos[1]:
+                        ship.remove(space)
+                        if len(ship) == 0:
+                            self.my_board.taken_spaces.remove(ship)
+                            return SUNK
+                        return HIT
+        except IndexError:
+            return ERR1
 
     def play(self, rules:tuple = (4,3,2,1)):
         refill = self.my_board.fill(rules)
@@ -146,6 +150,9 @@ class PlayerAI:
                     shot = input().upper()
                 shot = parse_shot(shot)
                 res = self.recieve_shot(shot)
+                if res == ERR1:
+                    print(ERR1[1])
+                    continue
                 print(OUTCOMES[res])
                 if res == MISS:
                     round_no += 1
