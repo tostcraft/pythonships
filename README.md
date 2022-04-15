@@ -13,11 +13,11 @@ numbers from 1-10 and the columns with letters A-J. Then place your ships on one
 + 4 single ships (taking up 1 square)
 + 3 double ships
 + 2 triple ships
-+ 1 quadruple ship
++ 1 quadruple ship  
 You can place them according to the following rules:
 + every square in a ship has to share at least one side with another square belonging to the same ship
 + ships cannot intersect each other
-+ ships cannot share neither an edge nor a corner
++ ships cannot share neither an edge nor a corner  
   
 When you're ready, siply type any input into the window and press enter, this will start the game.  
 While playing you and the bot will be taking turns. During your turn, you will have to input the coordinates of the square you want to shoot at. You do this
@@ -31,7 +31,7 @@ Your turn will end only when you miss.
 During the bot's turn, it will display coordinates in the same manner you were asked to input them, and ask for feedback. You have 3 different options to input:
 + m when the bot missed
 + h when the bot landed a hit but the ship it hit still has more tiles
-+ s when the bot has hit the last not hit tile in a ship
++ s when the bot has hit the last not hit tile in a ship  
   
 **_IT IS VERY IMPORTANT TO NOT CHEAT AS THE BOT WON'T CALL YOU OUT!!!_**  
 The bot's turn will also end only when it has missed its shot.  
