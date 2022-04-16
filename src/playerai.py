@@ -3,7 +3,7 @@
 import re
 import random
 
-import generator
+import src.generator as generator
 
 ERR1 = (1001, "Given coordinates appear to be out of range!")
 HIT = 2
@@ -118,6 +118,15 @@ class PlayerAI:
                         return HIT
         except IndexError:
             return ERR1
+
+    def choose_shot(self):
+        if len(self.queue) == 0:
+            shot = self.options.pop(random.randrange(0, len(self.options)))
+        else:
+            shot = self.queue.pop(random.randrange(0, len(self.queue)))
+            while self.enemy[shot[1]][shot[0]] == SUNK:
+                shot = self.queue.pop(random.randrange(0, len(self.queue)))
+        return shot
 
     def play(self, rules:tuple = (4,3,2,1)):
         refill = self.my_board.fill(rules)
