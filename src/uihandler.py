@@ -9,8 +9,8 @@ SELECTEDCOLORS = 3
 @dataclass
 class Menu:
     title: str
-    options :list
-    bindings :list
+    options :tuple
+    bindings :tuple
 
 
 class UI:
@@ -44,7 +44,11 @@ class UI:
 
     def getinput(self, prompt:str = None):
         y = self.stdscr.getyx()[0]
-        self.stdscr.move(y+1, 0)
+        try:
+            self.stdscr.move(y+1, 0)
+        except curses.error:
+            self.stdscr.resize(1, 0)
+            self.stdscr.move(y+1, 0)
         if prompt is not None:
             self.addstr(prompt)
         y,x = self.stdscr.getyx()
@@ -61,7 +65,7 @@ class UI:
             self.stdscr.clrtoeol()
             self.addstr(rtrn)
         return rtrn
-    
+
     def handle_menu(self, menu:Menu):
         curses.curs_set(0)
         eols = []
@@ -88,22 +92,10 @@ class UI:
             if str(c) == "KEY_DOWN":
                 pointer = (pointer+1)%len(menu.options)
             if str(c) in ("KEY_ENTER", "\n", "\r"):
-                menu.bindings[pointer]()
-            if str(c) in ("KEY_BACKSPACE", "\b", "\x7f") :
                 break
+        menu.bindings[pointer]()
         curses.curs_set(1)
 
 
 if __name__=="__main__":
-    ui = UI()
-    ui.addstr("Hello There!")
-    def foo1():
-        ui.addstr("bar1", 0, 10)
-    def foo2():
-        ui.addstr("bar2", 0, 10)
-    def foo3():
-        ui.addstr("bar3", 0, 10)
-    menu1 = Menu("Menu#1", ["beep", "flash", "kill"], [foo1, foo2, foo3])
-    ui.handle_menu(menu1)
-    ui.stdscr.getkey()
-    ui.kill()
+    pass
